@@ -17,7 +17,8 @@
       "@theia/java": "../../packages/java",
       "@theia/python": "../../packages/python",
       "@theia/cpp": "../../packages/cpp",
-      "@theia/go": "../../packages/go"
+      "@theia/go": "../../packages/go",
+      "@theia/git": "../../packages/git"
     },
     "node_modulesPath": "../../node_modules"
   }
