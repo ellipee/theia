@@ -34,6 +34,7 @@ addons:
     packages:
     - g++-4.8
     - oracle-java8-set-default
+    - libsecret-1-dev
     chrome: stable
 before_script:
   - if [ ${TRAVIS_OS_NAME} = "linux" ]; then 
