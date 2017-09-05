@@ -5,49 +5,72 @@
 * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 */
 
-.markers-container {
+.theia-markers-container {
     font-size: var(--theia-ui-font-size1);
     color: var(--theia-ui-font-color0);
 }
 
-.markerNode,
-.markerFileNode {
+.theia-markers-container .theia-TreeNode {
+    width: 100%;
+}
+
+.theia-markers-container .theia-ExpansionToggle {
+    min-width: 16px;
+}
+
+.theia-markers-container .markerNode,
+.theia-markers-container .markerFileNode {
     display: flex;
 }
 
-.markerNode div,
-.markerFileNode div {
+.theia-markers-container .markerNode {
+    width: calc(100% - 32px);
+}
+
+.theia-markers-container .markerNode div,
+.theia-markers-container .markerFileNode div {
     margin-right: 5px;
 }
 
-.markerFileNode .path {
+.theia-markers-container .markerFileNode .path {
     font-size: var(--theia-ui-font-size0);
     color: var(--theia-ui-font-color2);
     align-self: flex-end;
+    white-space: nowrap;
 }
 
-.error {
+.theia-markers-container .error {
     color: var(--theia-error-color0);
 }
 
-.warning {
+.theia-markers-container .warning {
     color: var(--theia-warn-color0);
 }
 
-.information {
+.theia-markers-container .information {
     color: var(--theia-info-color0);
 }
 
-.hint {
+.theia-markers-container .hint {
     color: var(--theia-success-color0);
 }
 
-.markerNode .position,
-.markerNode .owner {
+.theia-markers-container .markerNode .position,
+.theia-markers-container .markerNode .owner {
     color: var(--theia-ui-font-color2);
 }
 
-.markerFileNode .counter {
+.theia-markers-container .markerNode .position {
+    margin-left: 5px;
+}
+
+.theia-markers-container .markerNode .message {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.theia-markers-container .markerFileNode .counter {
     background-color: var(--theia-ui-font-color2);
     border-radius: 7px;
     padding: 1px 4px;

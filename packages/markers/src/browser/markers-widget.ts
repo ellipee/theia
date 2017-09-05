@@ -26,7 +26,7 @@ export class MarkersWidget extends TreeWidget {
         this.id = 'markers';
         this.title.label = 'Markers';
         this.title.closable = true;
-        this.addClass('markers-container');
+        this.addClass('theia-markers-container');
     }
 
     protected decorateCaption(node: ITreeNode, caption: h.Child, props: NodeProps): h.Child {
@@ -45,9 +45,9 @@ export class MarkersWidget extends TreeWidget {
         }
         const severityDiv = h.div({}, h.i({ className: severityClass }));
         const ownerDiv = h.div({ className: 'owner' }, '[' + node.owner + ']');
-        const messageDiv = h.div({}, node.diagnostic.message);
-        const startingPointDiv = h.div({ className: 'position' }, '(' + node.diagnostic.range.start.line + ', ' + node.diagnostic.range.start.character + ')');
-        return h.div({ className: 'markerNode' }, severityDiv, ownerDiv, messageDiv, startingPointDiv);
+        const startingPointDiv = h.span({ className: 'position' }, '(' + node.diagnostic.range.start.line + ', ' + node.diagnostic.range.start.character + ')');
+        const messageDiv = h.div({ className: 'message' }, node.diagnostic.message, startingPointDiv);
+        return h.div({ className: 'markerNode' }, severityDiv, ownerDiv, messageDiv);
     }
 
     protected getSeverityClass(severity: DiagnosticSeverity): string {
