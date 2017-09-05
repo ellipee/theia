@@ -8,7 +8,7 @@
 import { injectable, inject } from 'inversify';
 import { MarkersManager } from './markers-manager';
 import { MarkerFileNode, MarkerNode } from './markers-tree';
-import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, ITreeNode, NodeProps } from "@theia/core/lib/browser";
+import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, ITreeNode, NodeProps, ITreeModel } from "@theia/core/lib/browser";
 import { h } from "@phosphor/virtualdom/lib";
 import { DiagnosticSeverity } from "vscode-languageserver-types";
 
@@ -27,6 +27,10 @@ export class MarkersWidget extends TreeWidget {
         this.title.label = 'Markers';
         this.title.closable = true;
         this.addClass('theia-markers-container');
+    }
+
+    protected renderTree(model: ITreeModel): h.Child {
+        return super.renderTree(model) || h.div({ className: 'noMarkers' }, 'No problems have been detected in the workspace so far.');
     }
 
     protected decorateCaption(node: ITreeNode, caption: h.Child, props: NodeProps): h.Child {

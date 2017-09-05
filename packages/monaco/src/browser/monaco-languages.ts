@@ -39,7 +39,7 @@ export class MonacoLanguages extends BaseMonacoLanguages implements Languages {
         return {
             set: (uri, diagnostics) => {
                 monacoCollection.set(uri, diagnostics);
-                collection.setMarkers(diagnostics.map(diagnostic => this.toMarker(owner, uri, diagnostic)))
+                collection.setMarkers(uri, diagnostics.map(diagnostic => this.toMarker(owner, uri, diagnostic)));
             },
             dispose: () => toDispose.dispose()
         };

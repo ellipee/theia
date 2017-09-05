@@ -45,7 +45,7 @@ export class MarkersTree extends Tree {
     }
 
     getFileNodes(parent: MarkerRootNode): Promise<MarkerFileNode[]> {
-        const markerFiles = this.markersManager.getMarkerFilessByKind(this.markerRoot.kind);
+        const markerFiles = this.markersManager.getMarkerInformationByKind(this.markerRoot.kind);
         const uriNodes: MarkerFileNode[] = [];
         markerFiles.forEach(markerFile => {
             const markerFileNode: MarkerFileNode = {

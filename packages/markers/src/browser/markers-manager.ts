@@ -15,24 +15,40 @@ export interface Marker {
     owner: string;
 }
 
-export interface MarkerFile {
+export interface MarkerInfo {
     counter: number;
     uri: URI
 }
 
 export class MarkerCollection implements Disposable {
 
+    protected readonly markers = new Map<string, Marker[]>();
+
     constructor(
         public readonly owner: string,
-        protected readonly manager: MarkersManager
+        protected readonly fireDispose: () => void,
+        protected readonly fireChange: () => void
     ) { }
 
     dispose(): void {
-        this.manager.deleteCollection(this.owner);
+        this.fireDispose();
     }
 
-    setMarkers(markers: Marker[]): void {
-        this.manager.setMarkersByOwner(this.owner, markers);
+    get uris(): string[] {
+        return Array.from(this.markers.keys());
+    }
+
+    getMarkers(uri: string): Marker[] {
+        return this.markers.get(uri) || [];
+    }
+
+    setMarkers(uri: string, markers: Marker[]): void {
+        if (markers.length > 0) {
+            this.markers.set(uri, markers);
+        } else {
+            this.markers.delete(uri);
+        }
+        this.fireChange();
     }
 
 }
@@ -40,7 +56,6 @@ export class MarkerCollection implements Disposable {
 @injectable()
 export class MarkersManager {
 
-    protected readonly markers = new Map<string, Marker[]>();
     protected readonly owners = new Map<string, MarkerCollection>();
     protected readonly onDidChangeMarkersEmitter = new Emitter<void>();
 
@@ -55,59 +70,40 @@ export class MarkersManager {
         if (this.owners.has(owner)) {
             throw new Error('marker collection for the given owner already exists, owner: ' + owner);
         }
-        const collection = new MarkerCollection(owner, this);
+        const collection = new MarkerCollection(owner, () => this.deleteCollection(owner), () => this.fireOnDidChangeMarkers());
         this.owners.set(owner, collection);
         return collection;
     }
 
-    deleteCollection(owner: string): void {
+    protected deleteCollection(owner: string): void {
         this.owners.delete(owner);
     }
 
-    forEach(cb: (marker: Marker) => void): void {
-        for (const markers of this.markers.values()) {
-            for (const marker of markers) {
-                cb(marker);
-            }
-        }
-    }
-
-    forEachByKind(kind: string, cb: (marker: Marker) => void): void {
-        this.forEach(marker => {
-            if (marker.kind === kind) {
-                cb(marker);
-            }
+    getMarkerInformationByKind(kind: string): MarkerInfo[] {
+        const markerInfos: MarkerInfo[] = [];
+        this.owners.forEach(collection => {
+            collection.uris.forEach(uri => {
+                const markers = collection.getMarkers(uri).filter(marker => marker.kind === kind);
+                const markerInfo = markerInfos.find(m => m.uri.toString() === uri);
+                if (markers && !markerInfo) {
+                    markerInfos.push({
+                        uri: new URI(uri),
+                        counter: markers.length
+                    });
+                } else if (markers && markerInfo) {
+                    markerInfo.counter += markers.length;
+                }
+            });
         });
-    }
-
-    getMarkerFilessByKind(kind: string): MarkerFile[] {
-        const markerFiles: MarkerFile[] = [];
-        this.forEachByKind(kind, (marker: Marker) => {
-            const markerFile = markerFiles.find(mf => mf.uri.toString() === marker.uri.toString());
-            if (!markerFile) {
-                markerFiles.push({
-                    uri: marker.uri,
-                    counter: 1
-                });
-            } else {
-                markerFile.counter++;
-            }
-        });
-        return markerFiles;
+        return markerInfos;
     }
 
     getMarkersByUriAndKind(uri: URI, kind: string): Marker[] {
         const markers: Marker[] = [];
-        this.forEachByKind(kind, marker => {
-            if (uri.toString() === marker.uri.toString()) {
-                markers.push(marker);
-            }
+        this.owners.forEach(collection => {
+            const markersByKind = collection.getMarkers(uri.toString()).filter(marker => marker.kind === kind);
+            Array.prototype.push.apply(markers, markersByKind);
         });
         return markers;
-    }
-
-    setMarkersByOwner(owner: string, markers: Marker[]): void {
-        this.markers.set(owner, markers);
-        this.fireOnDidChangeMarkers();
     }
 }
