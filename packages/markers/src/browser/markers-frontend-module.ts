@@ -10,14 +10,15 @@ import { MarkersWidget } from './markers-widget';
 import { MarkersContribution } from './markers-contribution';
 import { MarkersManager } from './markers-manager';
 import { createMarkerWidget } from './markers-container';
-import { ProblemMarker } from './problem-marker';
+// import { ProblemMarker } from './problem-marker';
 import { CommandContribution, MenuContribution, KeybindingContribution } from "@theia/core/lib/common";
-import URI from "@theia/core/lib/common/uri";
+// import URI from "@theia/core/lib/common/uri";
 
 import '../../src/browser/style/index.css';
 
 export default new ContainerModule(bind => {
-    bind(MarkersManager).toSelf().inSingletonScope().onActivation((ctx, manager) => {
+    bind(MarkersManager).toSelf().inSingletonScope();
+    /*.onActivation((ctx, manager) => {
         const testCollection = manager.createCollection('test');
         const testMarker1: ProblemMarker = {
             kind: 'problem',
@@ -102,7 +103,7 @@ export default new ContainerModule(bind => {
         ]);
 
         return manager;
-    });
+    });*/
     bind(MarkersWidget).toDynamicValue(ctx =>
         createMarkerWidget(ctx.container)
     ).inSingletonScope();
