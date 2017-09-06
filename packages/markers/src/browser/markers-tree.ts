@@ -8,15 +8,16 @@
 import { injectable, inject } from "inversify";
 import { Tree, ICompositeTreeNode, ITreeNode, ISelectableTreeNode, IExpandableTreeNode } from "@theia/core/lib/browser";
 import { MarkersManager } from './markers-manager';
-import { ProblemMarker } from './problem-marker';
+import { Marker } from './';
 import { UriSelection } from "@theia/filesystem/lib/common";
-import { Diagnostic } from "vscode-languageserver-types";
+import URI from "@theia/core/lib/common/uri";
 
 @injectable()
 export class MarkersTree extends Tree {
 
     protected markerRoot: MarkerRootNode;
-    protected markerInfoNodes: MarkerInfoNode[] = [];
+    protected markerInfoNodeCache: MarkerInfoNode[] = [];
+    protected markerNodeCache: MarkerNode[] = [];
 
     constructor( @inject(MarkersManager) protected readonly markersManager: MarkersManager) {
         super();
@@ -49,58 +50,61 @@ export class MarkersTree extends Tree {
         const markerFiles = this.markersManager.getMarkerInformationByKind(this.markerRoot.kind);
         const uriNodes: MarkerInfoNode[] = [];
         markerFiles.forEach(markerInfo => {
-            const cachedMarkerInfo = this.markerInfoNodes.find(m => m.uri.toString() === markerInfo.uri.toString());
-            const markerFileNode: MarkerInfoNode = {
+            const cachedMarkerInfo = this.markerInfoNodeCache.find(m => m.uri.toString() === markerInfo.uri);
+            const markerInfoNodeUri = new URI(markerInfo.uri);
+            const markerInfoNode: MarkerInfoNode = {
                 children: [],
                 expanded: cachedMarkerInfo ? cachedMarkerInfo.expanded : false,
-                uri: markerInfo.uri,
-                visible: true,
-                id: 'markerFile-' + markerInfo.uri.displayName,
-                name: markerInfo.uri.displayName,
+                uri: markerInfoNodeUri,
+                id: 'markerInfo-' + markerInfoNodeUri.displayName,
+                name: markerInfoNodeUri.displayName,
                 parent,
                 selected: false,
                 numberOfMarkers: markerInfo.counter
             };
-            uriNodes.push(markerFileNode);
+            uriNodes.push(markerInfoNode);
         });
-        this.markerInfoNodes = uriNodes;
+        this.markerInfoNodeCache = uriNodes;
         return Promise.resolve(uriNodes);
     }
 
     getMarkerNodes(parent: MarkerInfoNode): Promise<MarkerNode[]> {
-        const markers = this.markersManager.getMarkersByUriAndKind(parent.uri, parent.parent.kind);
+        const markers = this.markersManager.getMarkersByUriAndKind(parent.uri.toString(), parent.parent.kind);
         const markerNodes: MarkerNode[] = [];
         let counter: number = 0;
-        markers.forEach((marker: ProblemMarker) => {
+        this.getNode()
+        markers.forEach((marker: Marker) => {
             counter++;
+            const cachedMarkerNode = this.markerNodeCache.find(m => m.uri.toString() === marker.uri);
+            const uri = new URI(marker.uri);
             const markerNode: MarkerNode = {
-                id: 'marker-' + marker.uri.displayName + '-' + counter,
-                name: marker.diagnostic.message,
-                parent: parent,
-                selected: false,
-                uri: marker.uri,
-                diagnostic: marker.diagnostic,
-                owner: marker.owner
+                id: 'marker-' + uri.toString() + '-' + counter,
+                name: marker.kind,
+                parent,
+                selected: cachedMarkerNode ? cachedMarkerNode.selected : false,
+                uri,
+                marker
             };
             markerNodes.push(markerNode);
         });
+        this.markerNodeCache = markerNodes;
         return Promise.resolve(markerNodes);
     }
-
 }
 
-// TODO must be generalized - diagnostic is problem view related
 export interface MarkerNode extends UriSelection, ISelectableTreeNode {
-    diagnostic: Diagnostic;
-    owner: string;
+    marker: Marker;
 }
 export namespace MarkerNode {
     export function is(node: ITreeNode | undefined): node is MarkerNode {
-        return UriSelection.is(node) && ISelectableTreeNode.is(node) && 'diagnostic' in node;
+        return UriSelection.is(node) && ISelectableTreeNode.is(node) && 'marker' in node;
     }
 }
 
-export type MarkerInfoNode = UriSelection & ISelectableTreeNode & IExpandableTreeNode & { parent: MarkerRootNode, numberOfMarkers: number };
+export interface MarkerInfoNode extends UriSelection, ISelectableTreeNode, IExpandableTreeNode {
+    parent: MarkerRootNode;
+    numberOfMarkers: number;
+}
 export namespace MarkerInfoNode {
     export function is(node: ITreeNode | undefined): node is MarkerInfoNode {
         return IExpandableTreeNode.is(node) && UriSelection.is(node);

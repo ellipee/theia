@@ -8,6 +8,7 @@
 import { injectable, inject } from 'inversify';
 import { MarkersManager } from './markers-manager';
 import { MarkerInfoNode, MarkerNode } from './markers-tree';
+import { ProblemMarker } from './problem-marker';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, ITreeNode, NodeProps, ITreeModel } from "@theia/core/lib/browser";
 import { h } from "@phosphor/virtualdom/lib";
 import { DiagnosticSeverity } from "vscode-languageserver-types";
@@ -23,8 +24,8 @@ export class MarkersWidget extends TreeWidget {
     ) {
         super(treeProps, markerTreeModel, contextMenuRenderer);
 
-        this.id = 'markers';
-        this.title.label = 'Markers';
+        this.id = 'problems';
+        this.title.label = 'Problems';
         this.title.closable = true;
         this.addClass('theia-markers-container');
     }
@@ -39,18 +40,19 @@ export class MarkersWidget extends TreeWidget {
         } else if (MarkerNode.is(node)) {
             return super.decorateCaption(node, this.decorateMarkerNode(node, caption), props);
         }
-        return h.div({}, caption);
+        return h.div({}, 'caption');
     }
 
     protected decorateMarkerNode(node: MarkerNode, caption: h.Child): h.Child {
         let severityClass: string = '';
-        if (node.diagnostic.severity) {
-            severityClass = this.getSeverityClass(node.diagnostic.severity);
+        const problemMarker = (node.marker as ProblemMarker);
+        if (problemMarker.diagnostic.severity) {
+            severityClass = this.getSeverityClass(problemMarker.diagnostic.severity);
         }
         const severityDiv = h.div({}, h.i({ className: severityClass }));
-        const ownerDiv = h.div({ className: 'owner' }, '[' + node.owner + ']');
-        const startingPointDiv = h.span({ className: 'position' }, '(' + node.diagnostic.range.start.line + ', ' + node.diagnostic.range.start.character + ')');
-        const messageDiv = h.div({ className: 'message' }, node.diagnostic.message, startingPointDiv);
+        const ownerDiv = h.div({ className: 'owner' }, '[' + problemMarker.owner + ']');
+        const startingPointDiv = h.span({ className: 'position' }, '(' + problemMarker.diagnostic.range.start.line + ', ' + problemMarker.diagnostic.range.start.character + ')');
+        const messageDiv = h.div({ className: 'message' }, problemMarker.diagnostic.message, startingPointDiv);
         return h.div({ className: 'markerNode' }, severityDiv, ownerDiv, messageDiv);
     }
 

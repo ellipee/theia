@@ -6,18 +6,17 @@
  */
 
 import { injectable } from "inversify";
-import URI from "@theia/core/lib/common/uri";
 import { Disposable, Event, Emitter } from "@theia/core/lib/common";
 
 export interface Marker {
-    uri: URI;
+    uri: string;
     kind: string;
     owner: string;
 }
 
 export interface MarkerInfo {
     counter: number;
-    uri: URI
+    uri: string
 }
 
 export class MarkerCollection implements Disposable {
@@ -87,7 +86,7 @@ export class MarkersManager {
                 const markerInfo = markerInfos.find(m => m.uri.toString() === uri);
                 if (markers && !markerInfo) {
                     markerInfos.push({
-                        uri: new URI(uri),
+                        uri,
                         counter: markers.length
                     });
                 } else if (markers && markerInfo) {
@@ -98,10 +97,10 @@ export class MarkersManager {
         return markerInfos;
     }
 
-    getMarkersByUriAndKind(uri: URI, kind: string): Marker[] {
+    getMarkersByUriAndKind(uri: string, kind: string): Marker[] {
         const markers: Marker[] = [];
         this.owners.forEach(collection => {
-            const markersByKind = collection.getMarkers(uri.toString()).filter(marker => marker.kind === kind);
+            const markersByKind = collection.getMarkers(uri).filter(marker => marker.kind === kind);
             Array.prototype.push.apply(markers, markersByKind);
         });
         return markers;

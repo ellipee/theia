@@ -7,7 +7,6 @@
 
 import { injectable, inject, decorate } from "inversify";
 import { MonacoLanguages as BaseMonacoLanguages, ProtocolToMonacoConverter, MonacoToProtocolConverter } from "monaco-languageclient";
-import URI from "@theia/core/lib/common/uri";
 import { DisposableCollection } from '@theia/core/lib/common';
 import { Languages, DiagnosticCollection } from "@theia/languages/lib/common";
 import { MarkersManager, ProblemMarker } from "@theia/markers/lib/browser";
@@ -48,7 +47,7 @@ export class MonacoLanguages extends BaseMonacoLanguages implements Languages {
     protected toMarker(owner: string, uri: string, diagnostic: Diagnostic): ProblemMarker {
         return {
             kind: 'problem',
-            uri: new URI(uri),
+            uri,
             diagnostic,
             owner
         };

@@ -57,11 +57,11 @@ export class MarkersContribution implements CommandContribution, MenuContributio
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(MarkersCommands.OPEN, {
             isEnabled: () => true,
-            execute: () => this.newMarkerView()
+            execute: () => this.openMarkerView()
         });
     }
 
-    protected newMarkerView(): void {
+    protected openMarkerView(): void {
         this.app.shell.addToMainArea(this.markerWidget);
         this.app.shell.activateMain(this.markerWidget.id);
     }
