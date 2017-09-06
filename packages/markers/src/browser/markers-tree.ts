@@ -7,8 +7,7 @@
 
 import { injectable, inject } from "inversify";
 import { Tree, ICompositeTreeNode, ITreeNode, ISelectableTreeNode, IExpandableTreeNode } from "@theia/core/lib/browser";
-import { MarkersManager } from './markers-manager';
-import { Marker } from './';
+import { MarkersManager, Marker } from './markers-manager';
 import { UriSelection } from "@theia/filesystem/lib/common";
 import URI from "@theia/core/lib/common/uri";
 
@@ -47,8 +46,11 @@ export class MarkersTree extends Tree {
     }
 
     getMarkerInfoNodes(parent: MarkerRootNode): Promise<MarkerInfoNode[]> {
+        // FIXME change to foreach...
         const markerFiles = this.markersManager.getMarkerInformationByKind(this.markerRoot.kind);
         const uriNodes: MarkerInfoNode[] = [];
+        // FIXME use this.getNode() instead of local caches
+        // FIXME reuse existing nodes instead of creating new
         markerFiles.forEach(markerInfo => {
             const cachedMarkerInfo = this.markerInfoNodeCache.find(m => m.uri.toString() === markerInfo.uri);
             const markerInfoNodeUri = new URI(markerInfo.uri);
@@ -72,13 +74,14 @@ export class MarkersTree extends Tree {
         const markers = this.markersManager.getMarkersByUriAndKind(parent.uri.toString(), parent.parent.kind);
         const markerNodes: MarkerNode[] = [];
         let counter: number = 0;
-        this.getNode()
-        markers.forEach((marker: Marker) => {
+        // FIXME use this.getNode() instead of local caches
+        // FIXME reuse existing nodes instead of creating new
+        markers.forEach(marker => {
             counter++;
             const cachedMarkerNode = this.markerNodeCache.find(m => m.uri.toString() === marker.uri);
             const uri = new URI(marker.uri);
             const markerNode: MarkerNode = {
-                id: 'marker-' + uri.toString() + '-' + counter,
+                id: marker.id,
                 name: marker.kind,
                 parent,
                 selected: cachedMarkerNode ? cachedMarkerNode.selected : false,
@@ -93,7 +96,7 @@ export class MarkersTree extends Tree {
 }
 
 export interface MarkerNode extends UriSelection, ISelectableTreeNode {
-    marker: Marker;
+    marker: Marker<object>;
 }
 export namespace MarkerNode {
     export function is(node: ITreeNode | undefined): node is MarkerNode {

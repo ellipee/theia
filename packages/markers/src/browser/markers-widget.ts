@@ -45,14 +45,15 @@ export class MarkersWidget extends TreeWidget {
 
     protected decorateMarkerNode(node: MarkerNode, caption: h.Child): h.Child {
         let severityClass: string = '';
+        // FIXME replace down casting with the type check
         const problemMarker = (node.marker as ProblemMarker);
-        if (problemMarker.diagnostic.severity) {
-            severityClass = this.getSeverityClass(problemMarker.diagnostic.severity);
+        if (problemMarker.data.severity) {
+            severityClass = this.getSeverityClass(problemMarker.data.severity);
         }
         const severityDiv = h.div({}, h.i({ className: severityClass }));
         const ownerDiv = h.div({ className: 'owner' }, '[' + problemMarker.owner + ']');
-        const startingPointDiv = h.span({ className: 'position' }, '(' + problemMarker.diagnostic.range.start.line + ', ' + problemMarker.diagnostic.range.start.character + ')');
-        const messageDiv = h.div({ className: 'message' }, problemMarker.diagnostic.message, startingPointDiv);
+        const startingPointDiv = h.span({ className: 'position' }, '(' + problemMarker.data.range.start.line + ', ' + problemMarker.data.range.start.character + ')');
+        const messageDiv = h.div({ className: 'message' }, problemMarker.data.message, startingPointDiv);
         return h.div({ className: 'markerNode' }, severityDiv, ownerDiv, messageDiv);
     }
 

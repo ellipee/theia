@@ -7,16 +7,7 @@
 
 import { Marker } from "./markers-manager";
 import { Diagnostic } from "vscode-languageserver-types";
-import { ReadonlyJSONObject } from "@phosphor/coreutils/lib";
 
-export interface ProblemMarkerScheme extends ReadonlyJSONObject {
-    filename: string;
-    path: string;
-    message: string;
-    position: string;
-}
-
-export interface ProblemMarker extends Marker {
+export interface ProblemMarker extends Marker<Diagnostic> {
     kind: 'problem';
-    diagnostic: Diagnostic;
 }

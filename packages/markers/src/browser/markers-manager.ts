@@ -8,10 +8,12 @@
 import { injectable } from "inversify";
 import { Disposable, Event, Emitter } from "@theia/core/lib/common";
 
-export interface Marker {
+export interface Marker<T> {
+    id: string;
     uri: string;
-    kind: string;
     owner: string;
+    kind: string;
+    data: T;
 }
 
 export interface MarkerInfo {
@@ -19,12 +21,14 @@ export interface MarkerInfo {
     uri: string
 }
 
-export class MarkerCollection implements Disposable {
+export class MarkerCollection<T> implements Disposable {
 
-    protected readonly markers = new Map<string, Marker[]>();
+    protected readonly markers = new Map<string, Readonly<Marker<T>>[]>();
+    protected readonly idSequences = new Map<string, number>();
 
     constructor(
         public readonly owner: string,
+        public readonly kind: string,
         protected readonly fireDispose: () => void,
         protected readonly fireChange: () => void
     ) { }
@@ -37,17 +41,34 @@ export class MarkerCollection implements Disposable {
         return Array.from(this.markers.keys());
     }
 
-    getMarkers(uri: string): Marker[] {
+    getMarkers(uri: string): Readonly<Marker<T>>[] {
         return this.markers.get(uri) || [];
     }
 
-    setMarkers(uri: string, markers: Marker[]): void {
-        if (markers.length > 0) {
-            this.markers.set(uri, markers);
+    setMarkers(uri: string, markerData: T[]): void {
+        if (markerData.length > 0) {
+            this.markers.set(uri, markerData.map(data => this.createMarker(uri, data)));
         } else {
             this.markers.delete(uri);
         }
         this.fireChange();
+    }
+
+    protected createMarker(uri: string, data: T): Readonly<Marker<T>> {
+        const id = this.nextId(uri);
+        return Object.freeze({
+            uri,
+            kind: this.kind,
+            owner: this.owner,
+            id: `${this.owner}_${uri}_${id}`,
+            data
+        });
+    }
+
+    protected nextId(uri: string): number {
+        const id = this.idSequences.get(uri) || 0;
+        this.idSequences.set(uri, id + 1);
+        return id;
     }
 
 }
@@ -55,7 +76,7 @@ export class MarkerCollection implements Disposable {
 @injectable()
 export class MarkersManager {
 
-    protected readonly owners = new Map<string, MarkerCollection>();
+    protected readonly owners = new Map<string, MarkerCollection<object>>();
     protected readonly onDidChangeMarkersEmitter = new Emitter<void>();
 
     get onDidChangeMarkers(): Event<void> {
@@ -65,11 +86,11 @@ export class MarkersManager {
         this.onDidChangeMarkersEmitter.fire(undefined);
     }
 
-    createCollection(owner: string): MarkerCollection {
+    createCollection<T extends object>(owner: string, kind: string): MarkerCollection<T> {
         if (this.owners.has(owner)) {
             throw new Error('marker collection for the given owner already exists, owner: ' + owner);
         }
-        const collection = new MarkerCollection(owner, () => this.deleteCollection(owner), () => this.fireOnDidChangeMarkers());
+        const collection = new MarkerCollection<T>(owner, kind, () => this.deleteCollection(owner), () => this.fireOnDidChangeMarkers());
         this.owners.set(owner, collection);
         return collection;
     }
@@ -81,27 +102,31 @@ export class MarkersManager {
     getMarkerInformationByKind(kind: string): MarkerInfo[] {
         const markerInfos: MarkerInfo[] = [];
         this.owners.forEach(collection => {
-            collection.uris.forEach(uri => {
-                const markers = collection.getMarkers(uri).filter(marker => marker.kind === kind);
-                const markerInfo = markerInfos.find(m => m.uri.toString() === uri);
-                if (markers && !markerInfo) {
-                    markerInfos.push({
-                        uri,
-                        counter: markers.length
-                    });
-                } else if (markers && markerInfo) {
-                    markerInfo.counter += markers.length;
-                }
-            });
+            if (collection.kind === kind) {
+                collection.uris.forEach(uri => {
+                    const markers = collection.getMarkers(uri);
+                    const markerInfo = markerInfos.find(m => m.uri.toString() === uri);
+                    if (markers && !markerInfo) {
+                        markerInfos.push({
+                            uri,
+                            counter: markers.length
+                        });
+                    } else if (markers && markerInfo) {
+                        markerInfo.counter += markers.length;
+                    }
+                });
+            }
         });
         return markerInfos;
     }
 
-    getMarkersByUriAndKind(uri: string, kind: string): Marker[] {
-        const markers: Marker[] = [];
+    getMarkersByUriAndKind(uri: string, kind: string): Readonly<Marker<Object>>[] {
+        const markers: Marker<Object>[] = [];
         this.owners.forEach(collection => {
-            const markersByKind = collection.getMarkers(uri).filter(marker => marker.kind === kind);
-            Array.prototype.push.apply(markers, markersByKind);
+            if (collection.kind === kind) {
+                const markersByKind = collection.getMarkers(uri);
+                markers.push(...markersByKind);
+            }
         });
         return markers;
     }
