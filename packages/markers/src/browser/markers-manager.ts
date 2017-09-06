@@ -99,35 +99,25 @@ export class MarkersManager {
         this.owners.delete(owner);
     }
 
-    getMarkerInformationByKind(kind: string): MarkerInfo[] {
-        const markerInfos: MarkerInfo[] = [];
+    protected forEachByKind(kind: string, cb: (mc: MarkerCollection<Object>) => void): void {
         this.owners.forEach(collection => {
             if (collection.kind === kind) {
-                collection.uris.forEach(uri => {
-                    const markers = collection.getMarkers(uri);
-                    const markerInfo = markerInfos.find(m => m.uri.toString() === uri);
-                    if (markers && !markerInfo) {
-                        markerInfos.push({
-                            uri,
-                            counter: markers.length
-                        });
-                    } else if (markers && markerInfo) {
-                        markerInfo.counter += markers.length;
-                    }
-                });
+                cb(collection);
             }
         });
-        return markerInfos;
     }
 
-    getMarkersByUriAndKind(uri: string, kind: string): Readonly<Marker<Object>>[] {
-        const markers: Marker<Object>[] = [];
-        this.owners.forEach(collection => {
-            if (collection.kind === kind) {
-                const markersByKind = collection.getMarkers(uri);
-                markers.push(...markersByKind);
-            }
-        });
-        return markers;
+    forEachMarkerInfoByKind(kind: string, cb: (markerInfo: MarkerInfo) => void): void {
+        this.forEachByKind(kind, collection => collection.uris.forEach(uri => {
+            const markers = collection.getMarkers(uri);
+            cb({
+                uri: uri,
+                counter: markers.length
+            });
+        }));
+    }
+
+    forEachMarkerByUriAndKind(uri: string, kind: string, cb: (marker: Readonly<Marker<Object>>) => void): void {
+        this.forEachByKind(kind, collection => collection.getMarkers(uri).forEach(m => cb(m)));
     }
 }

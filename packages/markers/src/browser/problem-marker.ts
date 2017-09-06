@@ -11,3 +11,9 @@ import { Diagnostic } from "vscode-languageserver-types";
 export interface ProblemMarker extends Marker<Diagnostic> {
     kind: 'problem';
 }
+
+export namespace ProblemMarker {
+    export function is(node: Marker<object>): node is ProblemMarker {
+        return 'kind' in node && node.kind === 'problem';
+    }
+}

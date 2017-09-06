@@ -15,8 +15,6 @@ import URI from "@theia/core/lib/common/uri";
 export class MarkersTree extends Tree {
 
     protected markerRoot: MarkerRootNode;
-    protected markerInfoNodeCache: MarkerInfoNode[] = [];
-    protected markerNodeCache: MarkerNode[] = [];
 
     constructor( @inject(MarkersManager) protected readonly markersManager: MarkersManager) {
         super();
@@ -46,51 +44,49 @@ export class MarkersTree extends Tree {
     }
 
     getMarkerInfoNodes(parent: MarkerRootNode): Promise<MarkerInfoNode[]> {
-        // FIXME change to foreach...
-        const markerFiles = this.markersManager.getMarkerInformationByKind(this.markerRoot.kind);
         const uriNodes: MarkerInfoNode[] = [];
-        // FIXME use this.getNode() instead of local caches
-        // FIXME reuse existing nodes instead of creating new
-        markerFiles.forEach(markerInfo => {
-            const cachedMarkerInfo = this.markerInfoNodeCache.find(m => m.uri.toString() === markerInfo.uri);
-            const markerInfoNodeUri = new URI(markerInfo.uri);
-            const markerInfoNode: MarkerInfoNode = {
-                children: [],
-                expanded: cachedMarkerInfo ? cachedMarkerInfo.expanded : false,
-                uri: markerInfoNodeUri,
-                id: 'markerInfo-' + markerInfoNodeUri.displayName,
-                name: markerInfoNodeUri.displayName,
-                parent,
-                selected: false,
-                numberOfMarkers: markerInfo.counter
-            };
-            uriNodes.push(markerInfoNode);
+        this.markersManager.forEachMarkerInfoByKind(this.markerRoot.kind, markerInfo => {
+            const uri = new URI(markerInfo.uri);
+            const id = 'markerInfo-' + markerInfo.uri;
+            const cachedMarkerInfo = this.getNode(id);
+            if (cachedMarkerInfo && MarkerInfoNode.is(cachedMarkerInfo)) {
+                uriNodes.push(cachedMarkerInfo);
+            } else {
+                uriNodes.push({
+                    children: [],
+                    expanded: false,
+                    uri,
+                    id,
+                    name: uri.displayName,
+                    parent,
+                    selected: false,
+                    numberOfMarkers: markerInfo.counter
+                });
+            }
         });
-        this.markerInfoNodeCache = uriNodes;
         return Promise.resolve(uriNodes);
     }
 
     getMarkerNodes(parent: MarkerInfoNode): Promise<MarkerNode[]> {
-        const markers = this.markersManager.getMarkersByUriAndKind(parent.uri.toString(), parent.parent.kind);
         const markerNodes: MarkerNode[] = [];
         let counter: number = 0;
-        // FIXME use this.getNode() instead of local caches
-        // FIXME reuse existing nodes instead of creating new
-        markers.forEach(marker => {
+        this.markersManager.forEachMarkerByUriAndKind(parent.uri.toString(), parent.parent.kind, marker => {
             counter++;
-            const cachedMarkerNode = this.markerNodeCache.find(m => m.uri.toString() === marker.uri);
             const uri = new URI(marker.uri);
-            const markerNode: MarkerNode = {
-                id: marker.id,
-                name: marker.kind,
-                parent,
-                selected: cachedMarkerNode ? cachedMarkerNode.selected : false,
-                uri,
-                marker
-            };
-            markerNodes.push(markerNode);
+            const cachedMarkerNode = this.getNode(marker.id);
+            if (MarkerNode.is(cachedMarkerNode)) {
+                markerNodes.push(cachedMarkerNode);
+            } else {
+                markerNodes.push({
+                    id: marker.id,
+                    name: marker.kind,
+                    parent,
+                    selected: false,
+                    uri,
+                    marker
+                });
+            }
         });
-        this.markerNodeCache = markerNodes;
         return Promise.resolve(markerNodes);
     }
 }
