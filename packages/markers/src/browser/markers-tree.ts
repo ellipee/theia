@@ -16,6 +16,7 @@ import { Diagnostic } from "vscode-languageserver-types";
 export class MarkersTree extends Tree {
 
     protected markerRoot: MarkerRootNode;
+    protected markerInfoNodes: MarkerInfoNode[] = [];
 
     constructor( @inject(MarkersManager) protected readonly markersManager: MarkersManager) {
         super();
@@ -37,34 +38,36 @@ export class MarkersTree extends Tree {
 
     resolveChildren(parent: ICompositeTreeNode): Promise<ITreeNode[]> {
         if (MarkerRootNode.is(parent)) {
-            return this.getFileNodes((parent as MarkerRootNode));
-        } else if (MarkerFileNode.is(parent)) {
+            return this.getMarkerInfoNodes((parent as MarkerRootNode));
+        } else if (MarkerInfoNode.is(parent)) {
             return this.getMarkerNodes(parent);
         }
         return super.resolveChildren(parent);
     }
 
-    getFileNodes(parent: MarkerRootNode): Promise<MarkerFileNode[]> {
+    getMarkerInfoNodes(parent: MarkerRootNode): Promise<MarkerInfoNode[]> {
         const markerFiles = this.markersManager.getMarkerInformationByKind(this.markerRoot.kind);
-        const uriNodes: MarkerFileNode[] = [];
-        markerFiles.forEach(markerFile => {
-            const markerFileNode: MarkerFileNode = {
+        const uriNodes: MarkerInfoNode[] = [];
+        markerFiles.forEach(markerInfo => {
+            const cachedMarkerInfo = this.markerInfoNodes.find(m => m.uri.toString() === markerInfo.uri.toString());
+            const markerFileNode: MarkerInfoNode = {
                 children: [],
-                expanded: false,
-                uri: markerFile.uri,
+                expanded: cachedMarkerInfo ? cachedMarkerInfo.expanded : false,
+                uri: markerInfo.uri,
                 visible: true,
-                id: 'markerFile-' + markerFile.uri.displayName,
-                name: markerFile.uri.displayName,
+                id: 'markerFile-' + markerInfo.uri.displayName,
+                name: markerInfo.uri.displayName,
                 parent,
                 selected: false,
-                numberOfMarkers: markerFile.counter
+                numberOfMarkers: markerInfo.counter
             };
             uriNodes.push(markerFileNode);
         });
+        this.markerInfoNodes = uriNodes;
         return Promise.resolve(uriNodes);
     }
 
-    getMarkerNodes(parent: MarkerFileNode): Promise<MarkerNode[]> {
+    getMarkerNodes(parent: MarkerInfoNode): Promise<MarkerNode[]> {
         const markers = this.markersManager.getMarkersByUriAndKind(parent.uri, parent.parent.kind);
         const markerNodes: MarkerNode[] = [];
         let counter: number = 0;
@@ -81,7 +84,6 @@ export class MarkersTree extends Tree {
             };
             markerNodes.push(markerNode);
         });
-
         return Promise.resolve(markerNodes);
     }
 
@@ -98,9 +100,9 @@ export namespace MarkerNode {
     }
 }
 
-export type MarkerFileNode = UriSelection & ISelectableTreeNode & IExpandableTreeNode & { parent: MarkerRootNode, numberOfMarkers: number };
-export namespace MarkerFileNode {
-    export function is(node: ITreeNode | undefined): node is MarkerFileNode {
+export type MarkerInfoNode = UriSelection & ISelectableTreeNode & IExpandableTreeNode & { parent: MarkerRootNode, numberOfMarkers: number };
+export namespace MarkerInfoNode {
+    export function is(node: ITreeNode | undefined): node is MarkerInfoNode {
         return IExpandableTreeNode.is(node) && UriSelection.is(node);
     }
 }

@@ -7,7 +7,7 @@
 
 import { injectable, inject } from 'inversify';
 import { MarkersManager } from './markers-manager';
-import { MarkerFileNode, MarkerNode } from './markers-tree';
+import { MarkerInfoNode, MarkerNode } from './markers-tree';
 import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, ITreeNode, NodeProps, ITreeModel } from "@theia/core/lib/browser";
 import { h } from "@phosphor/virtualdom/lib";
 import { DiagnosticSeverity } from "vscode-languageserver-types";
@@ -34,7 +34,7 @@ export class MarkersWidget extends TreeWidget {
     }
 
     protected decorateCaption(node: ITreeNode, caption: h.Child, props: NodeProps): h.Child {
-        if (MarkerFileNode.is(node)) {
+        if (MarkerInfoNode.is(node)) {
             return super.decorateExpandableCaption(node, this.decorateMarkerFileNode(node, caption), props);
         } else if (MarkerNode.is(node)) {
             return super.decorateCaption(node, this.decorateMarkerNode(node, caption), props);
@@ -64,7 +64,7 @@ export class MarkersWidget extends TreeWidget {
         }
     }
 
-    protected decorateMarkerFileNode(node: MarkerFileNode, caption: h.Child): h.Child {
+    protected decorateMarkerFileNode(node: MarkerInfoNode, caption: h.Child): h.Child {
         const filenameDiv = h.div({}, node.uri.displayName);
         const pathDiv = h.div({ className: 'path' }, node.uri.path.toString());
         const counterDiv = h.div({ className: 'counter' }, node.numberOfMarkers.toString());
