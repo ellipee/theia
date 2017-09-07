@@ -50,6 +50,7 @@ export class MarkerTree extends Tree {
             const id = 'markerInfo-' + markerInfo.uri;
             const cachedMarkerInfo = this.getNode(id);
             if (cachedMarkerInfo && MarkerInfoNode.is(cachedMarkerInfo)) {
+                cachedMarkerInfo.numberOfMarkers = markerInfo.counter;
                 uriNodes.push(cachedMarkerInfo);
             } else {
                 uriNodes.push({
@@ -75,6 +76,7 @@ export class MarkerTree extends Tree {
             const uri = new URI(marker.uri);
             const cachedMarkerNode = this.getNode(marker.id);
             if (MarkerNode.is(cachedMarkerNode)) {
+                cachedMarkerNode.marker = marker;
                 markerNodes.push(cachedMarkerNode);
             } else {
                 markerNodes.push({
