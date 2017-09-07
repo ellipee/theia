@@ -6,22 +6,22 @@
 */
 
 import { injectable, inject } from "inversify";
-import { MarkersTree, MarkerNode } from './markers-tree';
+import { MarkerTree, MarkerNode } from './marker-tree';
 import { TreeModel, TreeServices, OpenerService, open, ITreeNode } from "@theia/core/lib/browser";
 
 @injectable()
-export class MarkersTreeServices extends TreeServices {
+export class MarkerTreeServices extends TreeServices {
     @inject(OpenerService) readonly openerService: OpenerService;
 }
 
 @injectable()
-export class MarkersTreeModel extends TreeModel {
+export class MarkerTreeModel extends TreeModel {
 
     protected readonly openerService: OpenerService;
 
     constructor(
-        @inject(MarkersTree) protected readonly tree: MarkersTree,
-        @inject(MarkersTreeServices) readonly services: MarkersTreeServices
+        @inject(MarkerTree) protected readonly tree: MarkerTree,
+        @inject(MarkerTreeServices) readonly services: MarkerTreeServices
     ) {
         super(tree, services);
     }

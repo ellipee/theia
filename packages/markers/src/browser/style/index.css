@@ -5,76 +5,76 @@
 * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 */
 
-.theia-markers-container {
+.theia-marker-container {
     font-size: var(--theia-ui-font-size1);
     color: var(--theia-ui-font-color0);
 }
 
-.theia-markers-container .theia-TreeNode {
+.theia-marker-container .theia-TreeNode {
     width: 100%;
 }
 
-.theia-markers-container .theia-ExpansionToggle {
+.theia-marker-container .theia-ExpansionToggle {
     min-width: 16px;
 }
 
-.theia-markers-container .noMarkers {
+.theia-marker-container .noMarkers {
     margin: 5px;
 }
 
-.theia-markers-container .markerNode,
-.theia-markers-container .markerFileNode {
+.theia-marker-container .markerNode,
+.theia-marker-container .markerFileNode {
     display: flex;
 }
 
-.theia-markers-container .markerNode {
+.theia-marker-container .markerNode {
     width: calc(100% - 32px);
 }
 
-.theia-markers-container .markerNode div,
-.theia-markers-container .markerFileNode div {
+.theia-marker-container .markerNode div,
+.theia-marker-container .markerFileNode div {
     margin-right: 5px;
 }
 
-.theia-markers-container .markerFileNode .path {
+.theia-marker-container .markerFileNode .path {
     font-size: var(--theia-ui-font-size0);
     color: var(--theia-ui-font-color2);
     align-self: flex-end;
     white-space: nowrap;
 }
 
-.theia-markers-container .error {
+.theia-marker-container .error {
     color: var(--theia-error-color0);
 }
 
-.theia-markers-container .warning {
+.theia-marker-container .warning {
     color: var(--theia-warn-color0);
 }
 
-.theia-markers-container .information {
+.theia-marker-container .information {
     color: var(--theia-info-color0);
 }
 
-.theia-markers-container .hint {
+.theia-marker-container .hint {
     color: var(--theia-success-color0);
 }
 
-.theia-markers-container .markerNode .position,
-.theia-markers-container .markerNode .owner {
+.theia-marker-container .markerNode .position,
+.theia-marker-container .markerNode .owner {
     color: var(--theia-ui-font-color2);
 }
 
-.theia-markers-container .markerNode .position {
+.theia-marker-container .markerNode .position {
     margin-left: 5px;
 }
 
-.theia-markers-container .markerNode .message {
+.theia-marker-container .markerNode .message {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.theia-markers-container .markerFileNode .counter {
+.theia-marker-container .markerFileNode .counter {
     background-color: var(--theia-ui-font-color2);
     border-radius: 7px;
     padding: 1px 4px;

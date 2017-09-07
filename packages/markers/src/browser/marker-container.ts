@@ -6,11 +6,11 @@
 */
 
 import { interfaces, Container } from "inversify";
-import { MarkersTree } from './markers-tree';
-import { MarkersTreeModel, MarkersTreeServices } from './marker-tree-model';
+import { MarkerTree } from './marker-tree';
+import { MarkerTreeModel, MarkerTreeServices } from './marker-tree-model';
 import { MarkerWidget } from './marker-widget';
 import { createTreeContainer, Tree, ITree, TreeWidget, ITreeModel, TreeModel, TreeServices, TreeProps, defaultTreeProps } from "@theia/core/lib/browser";
-import { MARKER_CONTEXT_MENU } from "./markers-contribution";
+import { MARKER_CONTEXT_MENU } from "./marker-contribution";
 
 export const MARKER_TREE_PROPS = <TreeProps>{
     ...defaultTreeProps,
@@ -21,15 +21,15 @@ export function createMarkerContainer(parent: interfaces.Container): Container {
     const child = createTreeContainer(parent);
 
     child.unbind(Tree);
-    child.bind(MarkersTree).toSelf();
-    child.rebind(ITree).toDynamicValue(ctx => ctx.container.get(MarkersTree));
+    child.bind(MarkerTree).toSelf();
+    child.rebind(ITree).toDynamicValue(ctx => ctx.container.get(MarkerTree));
 
     child.unbind(TreeModel);
-    child.bind(MarkersTreeModel).toSelf();
-    child.rebind(ITreeModel).toDynamicValue(ctx => ctx.container.get(MarkersTreeModel));
+    child.bind(MarkerTreeModel).toSelf();
+    child.rebind(ITreeModel).toDynamicValue(ctx => ctx.container.get(MarkerTreeModel));
 
     child.unbind(TreeServices);
-    child.bind(MarkersTreeServices).toSelf();
+    child.bind(MarkerTreeServices).toSelf();
 
     child.unbind(TreeWidget);
     child.bind(MarkerWidget).toSelf();

@@ -6,9 +6,9 @@
 */
 
 import { injectable, inject } from 'inversify';
-import { MarkersManager } from './markers-manager';
-import { MarkerInfoNode, MarkerNode } from './markers-tree';
-import { MarkersTreeModel } from './marker-tree-model';
+import { MarkerManager } from './marker-manager';
+import { MarkerInfoNode, MarkerNode } from './marker-tree';
+import { MarkerTreeModel } from './marker-tree-model';
 import { ProblemMarker } from './problem-marker';
 import { TreeWidget, TreeProps, ContextMenuRenderer, ITreeNode, NodeProps, ITreeModel, ISelectableTreeNode } from "@theia/core/lib/browser";
 import { h } from "@phosphor/virtualdom/lib";
@@ -19,9 +19,9 @@ import { Message } from '@phosphor/messaging';
 export class MarkerWidget extends TreeWidget {
 
     constructor(
-        @inject(MarkersManager) protected readonly markerManager: MarkersManager,
+        @inject(MarkerManager) protected readonly markerManager: MarkerManager,
         @inject(TreeProps) readonly treeProps: TreeProps,
-        @inject(MarkersTreeModel) readonly model: MarkersTreeModel,
+        @inject(MarkerTreeModel) readonly model: MarkerTreeModel,
         @inject(ContextMenuRenderer) readonly contextMenuRenderer: ContextMenuRenderer
     ) {
         super(treeProps, model, contextMenuRenderer);
@@ -29,7 +29,7 @@ export class MarkerWidget extends TreeWidget {
         this.id = 'problems';
         this.title.label = 'Problems';
         this.title.closable = true;
-        this.addClass('theia-markers-container');
+        this.addClass('theia-marker-container');
 
         this.addClipboardListener(this.node, 'copy', e => this.handleCopy(e));
     }

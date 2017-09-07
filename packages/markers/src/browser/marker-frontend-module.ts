@@ -7,22 +7,22 @@
 
 import { ContainerModule } from "inversify";
 import { MarkerWidget } from './marker-widget';
-import { MarkersContribution } from './markers-contribution';
-import { MarkersManager } from './markers-manager';
-import { createMarkerWidget } from './markers-container';
+import { MarkerContribution } from './marker-contribution';
+import { MarkerManager } from './marker-manager';
+import { createMarkerWidget } from './marker-container';
 import { CommandContribution, MenuContribution, KeybindingContribution } from "@theia/core/lib/common";
 
 import '../../src/browser/style/index.css';
 
 export default new ContainerModule(bind => {
-    bind(MarkersManager).toSelf().inSingletonScope();
+    bind(MarkerManager).toSelf().inSingletonScope();
     bind(MarkerWidget).toDynamicValue(ctx =>
         createMarkerWidget(ctx.container)
     ).inSingletonScope();
-    bind(MarkersContribution).toSelf().inSingletonScope();
+    bind(MarkerContribution).toSelf().inSingletonScope();
     for (const identifier of [CommandContribution, MenuContribution, KeybindingContribution]) {
         bind(identifier).toDynamicValue(ctx =>
-            ctx.container.get(MarkersContribution)
+            ctx.container.get(MarkerContribution)
         ).inSingletonScope();
     }
 });

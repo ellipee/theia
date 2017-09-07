@@ -74,7 +74,7 @@ export class MarkerCollection<T> implements Disposable {
 }
 
 @injectable()
-export class MarkersManager {
+export class MarkerManager {
 
     protected readonly owners = new Map<string, MarkerCollection<object>>();
     protected readonly onDidChangeMarkersEmitter = new Emitter<void>();

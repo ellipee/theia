@@ -10,6 +10,6 @@
     "access": "public"
   },
   "theiaExtensions": [{
-    "frontend": "lib/browser/markers-frontend-module"
+    "frontend": "lib/browser/marker-frontend-module"
   }]
 }

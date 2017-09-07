@@ -31,13 +31,13 @@ export namespace MarkerCommands {
     export const COPY: Command = {
         id: 'marker-context:copy',
         label: 'Copy'
-    }
+    };
 }
 
 export const MARKER_CONTEXT_MENU = 'marker-context-menu';
 
 @injectable()
-export class MarkersContribution implements CommandContribution, MenuContribution, KeybindingContribution {
+export class MarkerContribution implements CommandContribution, MenuContribution, KeybindingContribution {
 
     constructor(
         @inject(MarkerWidget) protected readonly markerWidget: MarkerWidget,

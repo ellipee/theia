@@ -7,19 +7,19 @@
 
 import { injectable, inject } from "inversify";
 import { Tree, ICompositeTreeNode, ITreeNode, ISelectableTreeNode, IExpandableTreeNode } from "@theia/core/lib/browser";
-import { MarkersManager, Marker } from './markers-manager';
+import { MarkerManager, Marker } from './marker-manager';
 import { UriSelection } from "@theia/filesystem/lib/common";
 import URI from "@theia/core/lib/common/uri";
 
 @injectable()
-export class MarkersTree extends Tree {
+export class MarkerTree extends Tree {
 
     protected markerRoot: MarkerRootNode;
 
-    constructor( @inject(MarkersManager) protected readonly markersManager: MarkersManager) {
+    constructor( @inject(MarkerManager) protected readonly markerManager: MarkerManager) {
         super();
 
-        markersManager.onDidChangeMarkers(() => this.refresh());
+        markerManager.onDidChangeMarkers(() => this.refresh());
 
         // TODO must be generalized
         this.markerRoot = {
@@ -45,7 +45,7 @@ export class MarkersTree extends Tree {
 
     getMarkerInfoNodes(parent: MarkerRootNode): Promise<MarkerInfoNode[]> {
         const uriNodes: MarkerInfoNode[] = [];
-        this.markersManager.forEachMarkerInfoByKind(this.markerRoot.kind, markerInfo => {
+        this.markerManager.forEachMarkerInfoByKind(this.markerRoot.kind, markerInfo => {
             const uri = new URI(markerInfo.uri);
             const id = 'markerInfo-' + markerInfo.uri;
             const cachedMarkerInfo = this.getNode(id);
@@ -70,7 +70,7 @@ export class MarkersTree extends Tree {
     getMarkerNodes(parent: MarkerInfoNode): Promise<MarkerNode[]> {
         const markerNodes: MarkerNode[] = [];
         let counter: number = 0;
-        this.markersManager.forEachMarkerByUriAndKind(parent.uri.toString(), parent.parent.kind, marker => {
+        this.markerManager.forEachMarkerByUriAndKind(parent.uri.toString(), parent.parent.kind, marker => {
             counter++;
             const uri = new URI(marker.uri);
             const cachedMarkerNode = this.getNode(marker.id);

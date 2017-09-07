@@ -9,7 +9,7 @@ import { injectable, inject, decorate } from "inversify";
 import { MonacoLanguages as BaseMonacoLanguages, ProtocolToMonacoConverter, MonacoToProtocolConverter } from "monaco-languageclient";
 import { DisposableCollection } from '@theia/core/lib/common';
 import { Languages, DiagnosticCollection } from "@theia/languages/lib/common";
-import { MarkersManager } from "@theia/markers/lib/browser";
+import { MarkerManager } from "@theia/markers/lib/browser";
 import { Diagnostic } from "@theia/languages/lib/browser";
 
 decorate(injectable(), BaseMonacoLanguages);
@@ -22,7 +22,7 @@ export class MonacoLanguages extends BaseMonacoLanguages implements Languages {
     constructor(
         @inject(ProtocolToMonacoConverter) p2m: ProtocolToMonacoConverter,
         @inject(MonacoToProtocolConverter) m2p: MonacoToProtocolConverter,
-        @inject(MarkersManager) protected readonly markerManager: MarkersManager
+        @inject(MarkerManager) protected readonly markerManager: MarkerManager
     ) {
         super(p2m, m2p);
     }

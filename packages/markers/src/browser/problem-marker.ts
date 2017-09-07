@@ -5,7 +5,7 @@
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { Marker } from "./markers-manager";
+import { Marker } from "./marker-manager";
 import { Diagnostic } from "vscode-languageserver-types";
 
 export interface ProblemMarker extends Marker<Diagnostic> {
