@@ -8,26 +8,49 @@
 import { injectable, inject } from 'inversify';
 import { MarkersManager } from './markers-manager';
 import { MarkerInfoNode, MarkerNode } from './markers-tree';
+import { MarkersTreeModel } from './marker-tree-model';
 import { ProblemMarker } from './problem-marker';
-import { TreeWidget, TreeProps, TreeModel, ContextMenuRenderer, ITreeNode, NodeProps, ITreeModel } from "@theia/core/lib/browser";
+import { TreeWidget, TreeProps, ContextMenuRenderer, ITreeNode, NodeProps, ITreeModel, ISelectableTreeNode } from "@theia/core/lib/browser";
 import { h } from "@phosphor/virtualdom/lib";
 import { DiagnosticSeverity } from "vscode-languageserver-types";
+import { Message } from '@phosphor/messaging';
 
 @injectable()
-export class MarkersWidget extends TreeWidget {
+export class MarkerWidget extends TreeWidget {
 
     constructor(
         @inject(MarkersManager) protected readonly markerManager: MarkersManager,
         @inject(TreeProps) readonly treeProps: TreeProps,
-        @inject(TreeModel) readonly markerTreeModel: TreeModel,
+        @inject(MarkersTreeModel) readonly model: MarkersTreeModel,
         @inject(ContextMenuRenderer) readonly contextMenuRenderer: ContextMenuRenderer
     ) {
-        super(treeProps, markerTreeModel, contextMenuRenderer);
+        super(treeProps, model, contextMenuRenderer);
 
         this.id = 'problems';
         this.title.label = 'Problems';
         this.title.closable = true;
         this.addClass('theia-markers-container');
+
+        this.addClipboardListener(this.node, 'copy', e => this.handleCopy(e));
+    }
+
+    protected handleCopy(event: ClipboardEvent): void {
+        const node = this.model.selectedNode;
+        if (!node) {
+            return;
+        }
+        if (MarkerNode.is(node)) {
+            const uri = node.id;
+            event.clipboardData.setData('text/plain', uri);
+            event.preventDefault();
+        }
+    }
+
+    protected onUpdateRequest(msg: Message): void {
+        if (!this.model.selectedNode && ISelectableTreeNode.is(this.model.root)) {
+            this.model.selectNode(this.model.root);
+        }
+        super.onUpdateRequest(msg);
     }
 
     protected renderTree(model: ITreeModel): h.Child {

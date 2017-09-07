@@ -5,7 +5,7 @@
 * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 */
 
-import { MarkersWidget } from './markers-widget';
+import { MarkerWidget } from './marker-widget';
 import { inject, injectable } from "inversify";
 import {
     CommandContribution,
@@ -20,27 +20,33 @@ import {
     Modifier,
     MAIN_MENU_BAR
 } from "@theia/core/lib/common";
-import { FrontendApplication } from "@theia/core/lib/browser";
+import { FrontendApplication, CommonCommands } from "@theia/core/lib/browser";
 
-export namespace MarkersCommands {
+export namespace MarkerCommands {
     export const OPEN: Command = {
         id: 'markers:open',
         label: 'Markers'
     };
+
+    export const COPY: Command = {
+        id: 'marker-context:copy',
+        label: 'Copy'
+    }
 }
+
+export const MARKER_CONTEXT_MENU = 'marker-context-menu';
 
 @injectable()
 export class MarkersContribution implements CommandContribution, MenuContribution, KeybindingContribution {
 
     constructor(
-        @inject(MarkersWidget) protected readonly markerWidget: MarkersWidget,
-        @inject(FrontendApplication) protected readonly app: FrontendApplication) {
-
-    }
+        @inject(MarkerWidget) protected readonly markerWidget: MarkerWidget,
+        @inject(FrontendApplication) protected readonly app: FrontendApplication
+    ) { }
 
     registerKeyBindings(keybindings: KeybindingRegistry): void {
         keybindings.registerKeyBinding({
-            commandId: MarkersCommands.OPEN.id,
+            commandId: MarkerCommands.OPEN.id,
             keyCode: KeyCode.createKeyCode({
                 first: Key.KEY_M, modifiers: [Modifier.M2, Modifier.M1]
             })
@@ -50,12 +56,16 @@ export class MarkersContribution implements CommandContribution, MenuContributio
     registerMenus(menus: MenuModelRegistry): void {
         menus.registerSubmenu([MAIN_MENU_BAR], 'view', 'View');
         menus.registerMenuAction([MAIN_MENU_BAR, 'view'], {
-            commandId: MarkersCommands.OPEN.id
+            commandId: MarkerCommands.OPEN.id
+        });
+
+        menus.registerMenuAction([MARKER_CONTEXT_MENU], {
+            commandId: CommonCommands.COPY.id
         });
     }
 
     registerCommands(commands: CommandRegistry): void {
-        commands.registerCommand(MarkersCommands.OPEN, {
+        commands.registerCommand(MarkerCommands.OPEN, {
             isEnabled: () => true,
             execute: () => this.openMarkerView()
         });
