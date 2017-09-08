@@ -11,27 +11,30 @@ import { MarkerManager, Marker } from './marker-manager';
 import { UriSelection } from "@theia/filesystem/lib/common";
 import URI from "@theia/core/lib/common/uri";
 
+export const MarkerOptions = Symbol('MarkerOptions');
+export interface MarkerOptions {
+    readonly kind: string;
+}
+
 @injectable()
 export class MarkerTree extends Tree {
 
-    protected markerRoot: MarkerRootNode;
-
-    constructor( @inject(MarkerManager) protected readonly markerManager: MarkerManager) {
+    constructor(
+        @inject(MarkerManager) protected readonly markerManager: MarkerManager,
+        @inject(MarkerOptions) protected readonly markerOptions: MarkerOptions
+    ) {
         super();
 
         markerManager.onDidChangeMarkers(() => this.refresh());
 
-        // TODO must be generalized
-        this.markerRoot = {
+        this.root = <MarkerRootNode>{
             visible: false,
-            id: 'markerTree',
+            id: markerOptions.kind,
             name: 'MarkerTree',
-            kind: 'problem',
+            kind: markerOptions.kind,
             children: [],
             parent: undefined
         };
-
-        this.root = this.markerRoot;
     }
 
     resolveChildren(parent: ICompositeTreeNode): Promise<ITreeNode[]> {
@@ -45,26 +48,28 @@ export class MarkerTree extends Tree {
 
     getMarkerInfoNodes(parent: MarkerRootNode): Promise<MarkerInfoNode[]> {
         const uriNodes: MarkerInfoNode[] = [];
-        this.markerManager.forEachMarkerInfoByKind(this.markerRoot.kind, markerInfo => {
-            const uri = new URI(markerInfo.uri);
-            const id = 'markerInfo-' + markerInfo.uri;
-            const cachedMarkerInfo = this.getNode(id);
-            if (cachedMarkerInfo && MarkerInfoNode.is(cachedMarkerInfo)) {
-                cachedMarkerInfo.numberOfMarkers = markerInfo.counter;
-                uriNodes.push(cachedMarkerInfo);
-            } else {
-                uriNodes.push({
-                    children: [],
-                    expanded: false,
-                    uri,
-                    id,
-                    name: uri.displayName,
-                    parent,
-                    selected: false,
-                    numberOfMarkers: markerInfo.counter
-                });
-            }
-        });
+        if (this.root && MarkerRootNode.is(this.root)) {
+            this.markerManager.forEachMarkerInfoByKind(this.root.kind, markerInfo => {
+                const uri = new URI(markerInfo.uri);
+                const id = 'markerInfo-' + markerInfo.uri;
+                const cachedMarkerInfo = this.getNode(id);
+                if (cachedMarkerInfo && MarkerInfoNode.is(cachedMarkerInfo)) {
+                    cachedMarkerInfo.numberOfMarkers = markerInfo.counter;
+                    uriNodes.push(cachedMarkerInfo);
+                } else {
+                    uriNodes.push({
+                        children: [],
+                        expanded: false,
+                        uri,
+                        id,
+                        name: uri.displayName,
+                        parent,
+                        selected: false,
+                        numberOfMarkers: markerInfo.counter
+                    });
+                }
+            });
+        }
         return Promise.resolve(uriNodes);
     }
 

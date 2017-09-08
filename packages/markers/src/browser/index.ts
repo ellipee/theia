@@ -6,4 +6,4 @@
 */
 
 export * from './marker-manager';
-export * from './problem-marker';
+export * from './problem/problem-marker';
