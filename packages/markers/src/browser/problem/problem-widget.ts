@@ -40,8 +40,8 @@ export class ProblemWidget extends TreeWidget {
             return;
         }
         if (MarkerNode.is(node)) {
-            const uri = node.id;
-            event.clipboardData.setData('text/plain', uri);
+            const uri = node.uri;
+            event.clipboardData.setData('text/plain', uri.toString());
             event.preventDefault();
         }
     }

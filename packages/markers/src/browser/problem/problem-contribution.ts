@@ -7,17 +7,44 @@
 
 import { injectable, inject } from 'inversify';
 import { ProblemWidget } from './problem-widget';
-import { MarkerContribution } from '../marker-contribution';
-import { MenuModelRegistry } from '@theia/core/lib/common';
-import { CommonCommands } from '@theia/core/lib/browser';
+import {
+    MenuModelRegistry, Command, CommandContribution,
+    MenuContribution, KeybindingContribution, KeybindingRegistry,
+    KeyCode, Key, Modifier, CommandRegistry, MAIN_MENU_BAR
+} from '@theia/core/lib/common';
+import { CommonCommands, FrontendApplication } from '@theia/core/lib/browser';
 
 export const MARKER_CONTEXT_MENU = 'marker-context-menu';
 
-@injectable()
-export class ProblemContribution extends MarkerContribution {
+export namespace ProblemCommands {
+    export const OPEN: Command = {
+        id: 'markers:open',
+        label: 'Markers'
+    };
+}
 
-    constructor( @inject(ProblemWidget) protected readonly markerWidget: ProblemWidget) {
-        super();
+@injectable()
+export class ProblemContribution implements CommandContribution, MenuContribution, KeybindingContribution {
+
+    constructor(
+        @inject(ProblemWidget) protected readonly markerWidget: ProblemWidget,
+        @inject(FrontendApplication) protected readonly app: FrontendApplication) {
+    }
+
+    registerKeyBindings(keybindings: KeybindingRegistry): void {
+        keybindings.registerKeyBinding({
+            commandId: ProblemCommands.OPEN.id,
+            keyCode: KeyCode.createKeyCode({
+                first: Key.KEY_M, modifiers: [Modifier.M2, Modifier.M1]
+            })
+        });
+    }
+
+    registerCommands(commands: CommandRegistry): void {
+        commands.registerCommand(ProblemCommands.OPEN, {
+            isEnabled: () => true,
+            execute: () => this.openMarkerView()
+        });
     }
 
     protected openMarkerView(): void {
@@ -26,13 +53,13 @@ export class ProblemContribution extends MarkerContribution {
     }
 
     registerMenus(menus: MenuModelRegistry): void {
-        super.registerMenus(menus);
+        menus.registerSubmenu([MAIN_MENU_BAR], 'view', 'View');
+        menus.registerMenuAction([MAIN_MENU_BAR, 'view'], {
+            commandId: ProblemCommands.OPEN.id
+        });
 
         menus.registerMenuAction([MARKER_CONTEXT_MENU], {
             commandId: CommonCommands.COPY.id
         });
     }
 }
-
-
-

@@ -8,8 +8,6 @@
 import { interfaces, Container } from "inversify";
 import { createMarkerTreeContainer } from "../marker-container";
 import { MarkerOptions } from '../marker-tree';
-import { Marker } from '../marker-manager';
-import { ProblemMarker } from './problem-marker';
 import { ProblemWidget } from './problem-widget';
 import { ProblemTreeModel } from './problem-tree-model';
 import { MARKER_CONTEXT_MENU } from './problem-contribution';
@@ -21,15 +19,7 @@ export const MARKER_TREE_PROPS = <TreeProps>{
 };
 
 export const MARKER_OPTIONS = <MarkerOptions>{
-    kind: 'problem',
-    openerOptionsByMarker: (marker: Marker<object>) => {
-        if (ProblemMarker.is(marker)) {
-            return {
-                selection: marker.data.range
-            };
-        }
-        return {};
-    }
+    kind: 'problem'
 };
 
 export function createProblemTreeContainer(parent: interfaces.Container): Container {

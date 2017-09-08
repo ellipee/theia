@@ -6,8 +6,7 @@
 * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 */
 import { ProblemMarker } from './problem-marker';
-import { MarkerTree } from '../marker-tree';
-import { Marker } from '../marker-manager';
+import { MarkerNode, MarkerTree } from '../marker-tree';
 import { MarkerTreeModel, MarkerTreeServices } from '../marker-tree-model';
 import { injectable, inject } from "inversify";
 import { OpenerService, OpenerOptions } from '@theia/core/lib/browser';
@@ -24,12 +23,12 @@ export class ProblemTreeModel extends MarkerTreeModel {
         super(tree, services);
     }
 
-    protected getOpenerOptionsByMarker(marker: Marker<object>): OpenerOptions {
-        if (ProblemMarker.is(marker)) {
+    protected getOpenerOptionsByMarker(node: MarkerNode): OpenerOptions | undefined {
+        if (ProblemMarker.is(node.marker)) {
             return {
-                selection: marker.data.range
+                selection: node.marker.data.range
             };
         }
-        return {};
+        return undefined;
     }
 }
