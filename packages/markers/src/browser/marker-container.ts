@@ -6,9 +6,9 @@
 */
 
 import { interfaces, Container } from "inversify";
-import { MarkerTree } from './marker-tree';
 import { MarkerTreeServices } from './marker-tree-model';
-import { createTreeContainer, Tree, ITree, TreeServices } from "@theia/core/lib/browser";
+import { MarkerTree } from './marker-tree';
+import { createTreeContainer, TreeServices, Tree, ITree } from "@theia/core/lib/browser";
 
 export function createMarkerTreeContainer(parent: interfaces.Container): Container {
     const child = createTreeContainer(parent);

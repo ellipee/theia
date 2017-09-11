@@ -10,6 +10,7 @@ import { Tree, ICompositeTreeNode, ITreeNode, ISelectableTreeNode, IExpandableTr
 import { MarkerManager, Marker } from './marker-manager';
 import { UriSelection } from "@theia/filesystem/lib/common";
 import URI from "@theia/core/lib/common/uri";
+import { JSONExt, ReadonlyJSONObject } from "@phosphor/coreutils";
 
 export const MarkerOptions = Symbol('MarkerOptions');
 export interface MarkerOptions {
@@ -29,7 +30,7 @@ export class MarkerTree extends Tree {
 
         this.root = <MarkerRootNode>{
             visible: false,
-            id: markerOptions.kind,
+            id: 'theia-' + markerOptions.kind + '-marker-widget',
             name: 'MarkerTree',
             kind: markerOptions.kind,
             children: [],
@@ -73,13 +74,25 @@ export class MarkerTree extends Tree {
         return Promise.resolve(uriNodes);
     }
 
+    getNodeByMarker(marker: Marker<object>): MarkerNode | undefined {
+        for (const id in this.nodes) {
+            if (this.nodes.hasOwnProperty(id)) {
+                const markerNode = this.nodes[id];
+                if (MarkerNode.is(markerNode)) {
+                    if (JSONExt.deepEqual((marker.data as ReadonlyJSONObject), (markerNode.marker.data as ReadonlyJSONObject))) {
+                        return markerNode;
+                    }
+                }
+            }
+        }
+        return undefined;
+    }
+
     getMarkerNodes(parent: MarkerInfoNode): Promise<MarkerNode[]> {
         const markerNodes: MarkerNode[] = [];
-        let counter: number = 0;
         this.markerManager.forEachMarkerByUriAndKind(parent.uri.toString(), parent.parent.kind, marker => {
-            counter++;
             const uri = new URI(marker.uri);
-            const cachedMarkerNode = this.getNode(marker.id);
+            const cachedMarkerNode = this.getNodeByMarker(marker);
             if (MarkerNode.is(cachedMarkerNode)) {
                 cachedMarkerNode.marker = marker;
                 markerNodes.push(cachedMarkerNode);
